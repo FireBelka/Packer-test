@@ -1,0 +1,62 @@
+{
+"builders": [
+        {
+            "type": "virtualbox-iso",
+            "guest_os_type": "Ubuntu_64",
+            "iso_urls": [
+                "iso/ubuntu-18.04-desktop-amd64.iso",
+                "http://old-releases.ubuntu.com/releases/bionic/ubuntu-18.04-desktop-amd64.iso"
+            ],
+            "iso_checksum": "sha256:a55353d837cbf7bc006cf49eeff05ae5044e757498e30643a9199b9a25bc9a34",
+            "ssh_username": "vagrant",
+            "ssh_password": "vagrant",
+            "ssh_port": 22,
+            "ssh_wait_timeout": "10000s",
+
+            "disk_size": "40000",
+            "guest_additions_path": "VBoxGuestAdditions_{{.Version}}.iso",
+            "virtualbox_version_file": ".vbox_version",
+            "vm_name": "packer-ubuntu-18.04-amd64",
+              "vboxmanage": [
+            ["modifyvm", "{{.Name}}", "--audio", "none"],
+            ["modifyvm", "{{.Name}}", "--usb", "off"],
+            ["modifyvm", "{{.Name}}", "--vram", "12"],
+            ["modifyvm", "{{.Name}}", "--vrde", "off"],
+            ["modifyvm", "{{.Name}}", "--nictype1", "virtio"],
+            ["modifyvm", "{{.Name}}", "--memory", "1024"],
+            ["modifyvm", "{{.Name}}", "--cpus", "1"]
+        ],
+            "boot_wait": "12s",
+            "boot_command": [
+            "<esc><esc><enter><wait>",
+            "/install/vmlinuz noapic ",
+            "initrd=/install/initrd.gz ",
+            "preseed/url=http://{{.HTTPIP}}:{{.HTTPPort}}/preseed.cfg ",
+            "debian-installer=en_US auto locale=en_US kbd-chooser/method=us ",
+"grub-installer/bootdev=/dev/sda<wait> ",
+            "fb=false debconf/frontend=noninteractive ",
+            "keyboard-configuration/modelcode=SKIP keyboard-configuration/layout=USA ",
+            "keyboard-configuration/variant=USA console-setup/ask_detect=false ",
+    "-- <enter>"
+     ],
+           
+            "headless": false,
+            "http_directory": "http",   
+            
+            
+"shutdown_command": "echo 'vagrant'| sudo -S shutdown -P now"
+        }
+    ],
+    "provisioners": [
+        {
+            "type": "shell",
+            "script": "scripts/init.sh",
+            "execute_command": "echo 'vagrant' | {{.Vars}} sudo -S -E bash '{{.Path}}'"
+        }
+    ],
+    "post-processors": [{
+      "type": "vagrant",
+      "compression_level": "0",
+      "output": "output/ubuntu-18.04.box"
+    }]
+  }
